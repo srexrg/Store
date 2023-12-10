@@ -39,4 +39,21 @@ const createUser = asyncHandler(async (req, res) => {
   }
 });
 
+const loginUser = asyncHandler(async(req,res)=>{
+
+  const {email,password} = req.body;
+
+  const user = await user.findOne({email});
+
+  if(!user){
+    throw new Error("User Doesnt exist");
+  }
+
+  if(!password){
+    
+  }
+
+
+})
+
 export { createUser };
