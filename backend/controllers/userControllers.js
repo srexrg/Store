@@ -34,8 +34,7 @@ const createUser = asyncHandler(async (req, res) => {
         isAdmin: newUser.isAdmin,
       });
   } catch (error) {
-    res.status(400);
-    throw new Error("Invalid",error);
+    res.status(400).json({ error: "Invalid request", message: error.message });
   }
 });
 
@@ -43,17 +42,33 @@ const loginUser = asyncHandler(async(req,res)=>{
 
   const {email,password} = req.body;
 
-  const user = await user.findOne({email});
+  const existingUser = await user.findOne({email});
 
-  if(!user){
+  if(!existingUser){
     throw new Error("User Doesnt exist");
   }
 
-  if(!password){
-    
+  const validPassword = await bcrypt.compare(password,existingUser.password);
+
+  if(!validPassword){
+    throw new Error('Incorrect Password');
   }
+
+  createToken(res,user._id);
+
+  res
+      .status(201)
+      .json({
+
+        _id: existingUser._id,
+        username: existingUser.username,
+        email: existingUser.email,
+        isAdmin: existingUser.isAdmin,
+      });
+
+      return;//Exit fn after sending responnse
 
 
 })
 
-export { createUser };
+export { createUser,loginUser };
