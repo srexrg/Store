@@ -117,11 +117,63 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
+const deleteUserById = asyncHandler(async (req,res)=>{
+  const curruser = await user.findById(req.params.id)
+
+  if(curruser){
+    if(curruser.isAdmin){
+      res.status(400)
+      throw new Error('Cannot delete Admin')
+    }
+
+    await user.deleteOne({_id: curruser._id})
+    res.json({message:"User Deleted"});
+  }else{
+    res.status(404)
+    throw new Error('User not found');
+  }
+})
+
+const getUserById = asyncHandler(async (req,res)=>{
+
+  const curruser = await user.findById(req.user._id).select("-password");
+
+   if(curruser){
+    res.json(curruser)
+    }else{
+      res.status(404)
+      throw new Error("User Not Found")
+    }
+  })
+
+  const updateUserById = asyncHandler(async (req,res)=>{
+    const curruser = await user.findById(req.params.id);
+
+    if (curruser) {
+      curruser.username = req.body.username || curruser.username;
+      curruser.email = req.body.email || curruser.email;
+      curruser.isAdmin = Boolean(req.body.isAdmin);
+  
+      const updatedUser = await curruser.save();
+  
+      res.json({
+        _id: updatedUser._id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        isAdmin: updatedUser.isAdmin,
+      });
+    } else {
+      res.status(404);
+      throw new Error("User not found");
+    }
+  });
+
+
 export {
   createUser,
   loginUser,
   logoutCurrentUser,
   getAllUsers,
   getCurrentUserProfile,
-  updateCurrentUserProfile,
+  updateCurrentUserProfile,deleteUserById,getUserById,updateUserById
 };
